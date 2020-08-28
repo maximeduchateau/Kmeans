@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.*;
 
 public class KMeans {
 
@@ -24,8 +25,9 @@ public class KMeans {
 
         for(int i = 0; i < 5; ++i) {
 
-            assignPointsToCentroid();
+            System.out.println(Arrays.toString(centroids));
 
+            assignPointsToCentroid();
             Point[] newCentroids = moveCentroids();
 
             if (stableCentroids(newCentroids)) {
@@ -89,17 +91,32 @@ public class KMeans {
                 double dist = p.distanceTo(centroids[j]);
 
                 // Point is closer, then retain centroid j as closest centroid
-                if (idxOfClosestCentroid == -1 || dist < minDist) {
+                if ( idxOfClosestCentroid == -1 || dist < minDist) {
                     minDist = dist;
                     idxOfClosestCentroid = j;
                 }
+
             }
 
             pointsPerCentroid.get(idxOfClosestCentroid).add(p);
-        }
-    }
 
-    public Point[] moveCentroids() {
+        }
+        for (int j = 0; j < k; ++j) {
+        if (pointsPerCentroid.get(j).size()==0){
+        if (j+1<k&&pointsPerCentroid.get(j+1).size()>0){
+
+            int IdxOfTransferedPoint = (int) ((pointsPerCentroid.get(j+1).size() * Math.random()));
+            pointsPerCentroid.get(j).add(pointsPerCentroid.get(j + 1).get(IdxOfTransferedPoint));
+            pointsPerCentroid.get(j+1).remove(IdxOfTransferedPoint);
+
+        }else if (j+1<k&&pointsPerCentroid.get(j-1).size()>0) {
+
+            int IdxOfTransferedPoint = (int) ((pointsPerCentroid.get(j - 1).size() * Math.random()));
+            pointsPerCentroid.get(j).add(pointsPerCentroid.get(j - 1).get(IdxOfTransferedPoint));
+           pointsPerCentroid.get(j-1).remove(IdxOfTransferedPoint);
+    }}}}
+
+    public Point[] moveCentroids(){
 
         Point[] centroids = new Point[k];
 
