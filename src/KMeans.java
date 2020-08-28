@@ -22,18 +22,18 @@ public class KMeans {
     public void start() {
         centroids = initCentroids();
 
-        while (true) {
-
-            System.out.println("Centroids: " + Arrays.toString(centroids));
+        for(int i = 0; i < 5; ++i) {
 
             assignPointsToCentroid();
+
             Point[] newCentroids = moveCentroids();
 
             if (stableCentroids(newCentroids)) {
-                System.out.println(centroids);
+                System.out.println(Arrays.toString(centroids));
                 break;
             }
-            centroids = newCentroids;
+
+            this.centroids = newCentroids;
         }
     }
 
@@ -80,6 +80,9 @@ public class KMeans {
         int idxOfClosestCentroid = -1;
 
         for (Point p : points) {
+
+            idxOfClosestCentroid = -1;
+
             for (int j = 0; j < k; ++j) {
 
                 // Compute distance from point p to centroid j
@@ -120,23 +123,22 @@ public class KMeans {
         // Normalize position of new centroids
         for(int centroidIdx = 0; centroidIdx < k; centroidIdx++) {
 
-            Point centroid = centroids[centroidIdx];
-
             // Get the number of points assign to centroid c
             int m = pointsPerCentroid.get(centroidIdx).size();
 
             for (int dim = 0; dim < numDim; dim++) {
-                centroid.setDim(dim, centroid.getLocation(dim) / Math.max(m, 1));
+                centroids[centroidIdx].setDim(dim, centroids[centroidIdx].getLocation(dim) / Math.max(m, 1));
             }
         }
 
         return centroids;
     }
 
-    public boolean stableCentroids(Point[] centroids) {
+    public boolean stableCentroids(Point[] newCentroids) {
+
         for(int i = 0; i < k; ++i) {
             for(int dim = 0; dim < numDim; ++dim) {
-                if(this.centroids[i].getLocation(dim) != centroids[i].getLocation(dim)) {
+                if(this.centroids[i].getLocation(dim) != newCentroids[i].getLocation(dim)) {
                     return false;
                 }
             }
