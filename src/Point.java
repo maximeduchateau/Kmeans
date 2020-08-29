@@ -49,6 +49,7 @@ public class Point {
     public double getLocation(int i) {
         return this.location[i];
     }
+    public double[] getFullLocation(){ return this.location; }
 
     @Override
     // ToString is called automatically whenever one attempts to print the object
