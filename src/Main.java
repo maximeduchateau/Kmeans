@@ -1,27 +1,28 @@
+import javax.swing.*;
 import java.util.ArrayList;
-import java.util.*;
 
 public class Main {
     public static void main(String[] args) {
 
-
-        Point point1 = new Point(2, new double[]{1, 1});
-        Point point2 = new Point(2, new double[]{2, 2});
-
-        Point point6 = new Point(2, new double[]{30, 30});
-        Point point3 = new Point(2, new double[]{50, 50});
-        Point point4 = new Point(2, new double[]{51, 51});
-        Point point5 = new Point(2, new double[]{52, 52});
-
+        // Create points
         ArrayList<Point> points = new ArrayList<>();
-        points.add(point1);
-        points.add(point2);
-        points.add(point6);
-        points.add(point3);
-        points.add(point4);
-        points.add(point5);
+        points.add(new Point(2, new double[]{1, 1}));
+        points.add(new Point(2, new double[]{2, 2}));
+        points.add(new Point(2, new double[]{30, 30}));
+        points.add(new Point(2, new double[]{50, 50}));
+        points.add(new Point(2, new double[]{51, 51}));
+        points.add(new Point(2, new double[]{52, 52}));
 
+        // Invoke KMeans clustering
         KMeans kmeans = new KMeans(2, 2, points, 5);
         kmeans.start();
+
+        // Visualize clustering
+        JFrame mainFrame = new JFrame();
+        mainFrame.setTitle("KMeans Clustering");
+        mainFrame.setContentPane(new ScatterPlot2D());
+        mainFrame.setSize(500, 500);
+        mainFrame.setVisible(true);
+        mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
     }
 }
