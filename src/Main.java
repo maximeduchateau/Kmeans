@@ -6,8 +6,9 @@ public class Main {
 
 
         Point point1 = new Point(2, new double[]{1, 1});
-        Point point2 = new Point(2, new double[]{1, 1});
-        Point point6 = new Point(2, new double[]{25, 25});
+        Point point2 = new Point(2, new double[]{2, 2});
+
+        Point point6 = new Point(2, new double[]{30, 30});
         Point point3 = new Point(2, new double[]{50, 50});
         Point point4 = new Point(2, new double[]{51, 51});
         Point point5 = new Point(2, new double[]{52, 52});
@@ -20,7 +21,7 @@ public class Main {
         points.add(point4);
         points.add(point5);
 
-        KMeans kmeans = new KMeans(2, 2, points);
+        KMeans kmeans = new KMeans(2, 2, points, 5);
         kmeans.start();
     }
 }

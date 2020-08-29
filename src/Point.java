@@ -51,6 +51,7 @@ public class Point {
     }
 
     @Override
+    // ToString is called automatically whenever one attempts to print the object
     public String toString() {
         return Arrays.toString(location);
     }
