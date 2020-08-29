@@ -20,7 +20,7 @@ public class Main {
         points.add(point4);
         points.add(point5);
 
-        KMeans kmeans = new KMeans(2, 2, points);
+        KMeans kmeans = new KMeans(2, 2, points,15);
         kmeans.start();
     }
 }
