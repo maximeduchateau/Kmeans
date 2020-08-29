@@ -1,3 +1,5 @@
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.*;
@@ -7,161 +9,194 @@ public class KMeans {
     private int numDim;
     private int k;
     private ArrayList<Point> points;
-    private Point[] centroids;
+    private Point[] centroids = initCentroids();
     private ArrayList<ArrayList<Point>> pointsPerCentroid;
+    private int numRuns ;
+    private double optimalCost=0;
+    private ArrayList<ArrayList<Point>> optimalClusters;
+    private Point [] optimalCentroids;
 
 
-    public KMeans(int numDim, int k, ArrayList points) {
+    public KMeans(int numDim, int k, ArrayList points, int numRuns) {
         this.numDim = numDim;
         this.k = k;
         this.points = points;
+        this.numRuns = numRuns;
     }
-
     /**
      * Start the KMeans algorithm.
      */
     public void start() {
-        centroids = initCentroids();
 
-        for(int i = 0; i < 5; ++i) {
+        for (int run = 0; run < numRuns; run++) {
+            Point[] centroids = new Point[k];
+            centroids = initCentroids();
 
-            System.out.println(Arrays.toString(centroids));
+            for (int i = 0; i < 5; ++i) {
 
-            assignPointsToCentroid();
-            Point[] newCentroids = moveCentroids();
 
-            if (stableCentroids(newCentroids)) {
                 System.out.println(Arrays.toString(centroids));
-                break;
-            }
+                assignPointsToCentroid();
+                Point[] newCentroids = moveCentroids();
 
-            this.centroids = newCentroids;
+                if (stableCentroids(newCentroids)) {
+                    double totalCost = computeCost();
+                    if (numRuns == 0 || totalCost < optimalCost) {
+                        optimalCost = totalCost;
+                        optimalClusters = pointsPerCentroid;
+                        optimalCentroids = centroids;
+                    }
+                    System.out.println(Arrays.toString(centroids));
+                    break;
+                }
+
+                this.centroids = newCentroids;
+            }
         }
+        System.out.println("optimal cost"+ optimalCost);
+        System.out.println("optimal centroids"+ optimalCentroids);
+        System.out.println("optimal clusters"+ optimalClusters);
     }
 
-    /**
-     * Generate an initial set of centroids.
-     *
-     * @return initial set of centroids
-     */
-    // TODO: Use k 'random' points as centroids (instead of k random positions - this allows faster convergence)
-    private Point[] initCentroids() {
-        // Centroids is list of k points
-        Point[] centroids = new Point[k];
+        /**
+         * Generate an initial set of centroids.
+         *
+         * @return initial set of centroids
+         */
+        private Point @NotNull [] initCentroids () {
+            // Centroids is list of k points
+            Point[] centroids = new Point[k];
+            int i =0;int j=0;
+            // Generate k random points
+            while(i < k) {
 
-        // Generate k random points
-        for (int i = 0; i < k; i++) {
+                Point point = new Point(numDim);
+                int idxOfPoint = (int) (Math.random() * points.size());
+                point = points.get(idxOfPoint);
+                centroids[i] = point;
+                while (j<i){
+                    if(!((points.get(idxOfPoint)).getFullLocation().equals( centroids[j].getFullLocation()))){
+                    j++;
+                } else {
+                    continue;
+                }}
 
-            Point point = new Point(numDim);
+                i++;
+            }
+            return centroids;
+        }
 
-            for (int j = 0; j < numDim; j++) {
-                point.setDim(j, 100 * Math.random());
+        /**
+         * Assign each point in points to the closest centroid
+         *
+         * @return
+         */
+        public void assignPointsToCentroid () {
+
+            // Completely overwrite previous assignment
+            this.pointsPerCentroid = new ArrayList<>();
+
+            // Generate empty list for each centroid
+            for (int i = 0; i < k; ++i) {
+                pointsPerCentroid.add(new ArrayList<>());
             }
 
-            centroids[i] = point;
-        }
-        return centroids;
-    }
+            double minDist = 0;
+            int idxOfClosestCentroid = -1;
 
-    /**
-     * Assign each point in points to the closest centroid
-     *
-     * @return
-     */
-    public void assignPointsToCentroid() {
+            for (Point p : points) {
 
-        // Completely overwrite previous assignment
-        this.pointsPerCentroid = new ArrayList<>();
+                idxOfClosestCentroid = -1;
 
-        // Generate empty list for each centroid
-        for (int i = 0; i < k; ++i) {
-            pointsPerCentroid.add(new ArrayList<>());
-        }
+                for (int j = 0; j < k; ++j) {
+                    // Compute distance from point p to centroid j
+                    double dist = p.distanceTo(centroids[j]);
 
-        double minDist = 0;
-        int idxOfClosestCentroid = -1;
+                    // Point is closer, then retain centroid j as closest centroid
+                    if (idxOfClosestCentroid == -1 || dist < minDist) {
+                        minDist = dist;
+                        idxOfClosestCentroid = j;
+                    }
 
-        for (Point p : points) {
+                }
+                if (idxOfClosestCentroid>-1){
+                pointsPerCentroid.get(idxOfClosestCentroid).add(p);
 
-            idxOfClosestCentroid = -1;
-
+            }}
             for (int j = 0; j < k; ++j) {
+                if (pointsPerCentroid.get(j).size() == 0) {
+                    if (j + 1 < k && pointsPerCentroid.get(j + 1).size() > 0) {
 
-                // Compute distance from point p to centroid j
-                double dist = p.distanceTo(centroids[j]);
+                        int IdxOfTransferedPoint = (int) ((pointsPerCentroid.get(j + 1).size() * Math.random()));
+                        pointsPerCentroid.get(j).add(pointsPerCentroid.get(j + 1).get(IdxOfTransferedPoint));
+                        pointsPerCentroid.get(j + 1).remove(IdxOfTransferedPoint);
 
-                // Point is closer, then retain centroid j as closest centroid
-                if ( idxOfClosestCentroid == -1 || dist < minDist) {
-                    minDist = dist;
-                    idxOfClosestCentroid = j;
+                    } else if (j + 1 < k && pointsPerCentroid.get(j - 1).size() > 0) {
+
+                        int IdxOfTransferedPoint = (int) ((pointsPerCentroid.get(j - 1).size() * Math.random()));
+                        pointsPerCentroid.get(j).add(pointsPerCentroid.get(j - 1).get(IdxOfTransferedPoint));
+                        pointsPerCentroid.get(j - 1).remove(IdxOfTransferedPoint);
+                    }
+                }
+            }
+        }
+
+        public Point[] moveCentroids () {
+
+            Point[] centroids = new Point[k];
+
+            for (int centroidIdx = 0; centroidIdx < k; centroidIdx++) {
+
+                // Create new point representing new position of centroid
+                Point centroid = new Point(numDim);
+
+                for (Point p : pointsPerCentroid.get(centroidIdx)) {
+
+                    // Compute new value in dimension dim for centroid
+                    for (int dim = 0; dim < numDim; dim++) {
+                        centroid.setDim(dim, centroid.getLocation(dim) + p.getLocation(dim));
+                    }
                 }
 
+                // Insert centroid in list
+                centroids[centroidIdx] = centroid;
             }
 
-            pointsPerCentroid.get(idxOfClosestCentroid).add(p);
+            // Normalize position of new centroids
+            for (int centroidIdx = 0; centroidIdx < k; centroidIdx++) {
 
-        }
-        for (int j = 0; j < k; ++j) {
-        if (pointsPerCentroid.get(j).size()==0){
-        if (j+1<k&&pointsPerCentroid.get(j+1).size()>0){
+                // Get the number of points assign to centroid c
+                int m = pointsPerCentroid.get(centroidIdx).size();
 
-            int IdxOfTransferedPoint = (int) ((pointsPerCentroid.get(j+1).size() * Math.random()));
-            pointsPerCentroid.get(j).add(pointsPerCentroid.get(j + 1).get(IdxOfTransferedPoint));
-            pointsPerCentroid.get(j+1).remove(IdxOfTransferedPoint);
-
-        }else if (j+1<k&&pointsPerCentroid.get(j-1).size()>0) {
-
-            int IdxOfTransferedPoint = (int) ((pointsPerCentroid.get(j - 1).size() * Math.random()));
-            pointsPerCentroid.get(j).add(pointsPerCentroid.get(j - 1).get(IdxOfTransferedPoint));
-           pointsPerCentroid.get(j-1).remove(IdxOfTransferedPoint);
-    }}}}
-
-    public Point[] moveCentroids(){
-
-        Point[] centroids = new Point[k];
-
-        for(int centroidIdx = 0; centroidIdx < k; centroidIdx++) {
-
-            // Create new point representing new position of centroid
-            Point centroid = new Point(numDim);
-
-            for(Point p: pointsPerCentroid.get(centroidIdx)) {
-
-                // Compute new value in dimension dim for centroid
                 for (int dim = 0; dim < numDim; dim++) {
-                    centroid.setDim(dim, centroid.getLocation(dim) + p.getLocation(dim));
+                    centroids[centroidIdx].setDim(dim, centroids[centroidIdx].getLocation(dim) / Math.max(m, 1));
                 }
             }
 
-            // Insert centroid in list
-            centroids[centroidIdx] = centroid;
+            return centroids;
         }
 
-        // Normalize position of new centroids
-        for(int centroidIdx = 0; centroidIdx < k; centroidIdx++) {
+        public boolean stableCentroids (Point[]newCentroids){
 
-            // Get the number of points assign to centroid c
-            int m = pointsPerCentroid.get(centroidIdx).size();
-
-            for (int dim = 0; dim < numDim; dim++) {
-                centroids[centroidIdx].setDim(dim, centroids[centroidIdx].getLocation(dim) / Math.max(m, 1));
-            }
-        }
-
-        return centroids;
-    }
-
-    public boolean stableCentroids(Point[] newCentroids) {
-
-        for(int i = 0; i < k; ++i) {
-            for(int dim = 0; dim < numDim; ++dim) {
-                if(this.centroids[i].getLocation(dim) != newCentroids[i].getLocation(dim)) {
-                    return false;
+            for (int i = 0; i < k; ++i) {
+                for (int dim = 0; dim < numDim; ++dim) {
+                    if (this.centroids[i].getLocation(dim) != newCentroids[i].getLocation(dim)) {
+                        return false;
+                    }
                 }
             }
-        }
 
-        return true;
-    }
-}
+            return true;
+        }
+        public double computeCost () {
+            double dist = 0;
+            for (int i = 0; i < k; i++) {
+                for (Point point : pointsPerCentroid.get(i)) {
+                    dist += point.distanceTo(centroids[i]);
+                }
+            }
+            return dist;
+        }}
+
+
 
